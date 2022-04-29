@@ -3,7 +3,7 @@ import { TargetFile } from "./getTargetFileList";
 
 export const createReport = (fileList: TargetFile[]): string => {
   let report = `
-  ## Bundle Analysis
+  ## Filesize Analysis
   
   | Filename | Size |
   | -------- | ---- |
