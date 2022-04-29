@@ -1,0 +1,23 @@
+name: Example
+
+on:
+  pull_request:
+
+permissions:
+  pull-requests: write
+
+jobs:
+  analysis:
+    name: Analysis bundle files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v2
+
+      - name: Analysis
+        uses: ./
+        with:
+          out_dir: "./dist"
+          ext: "js"
+          github_token: ${{secrets.GITHUB_TOKEN}}
