@@ -14,7 +14,7 @@ const run = async () => {
     const octokit = getOctokit(githubToken);
 
     debug(`Read bundle files from ${outDir}`);
-    const fileList = getTargetFileList(outDir, ext);
+    const fileList = await getTargetFileList(outDir, ext);
     debug(`Found files: ${fileList}`);
 
     if (!fileList.length) {

@@ -8840,25 +8840,26 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getTargetFileList = void 0;
 const fs_1 = __nccwpck_require__(7147);
 const path_1 = __nccwpck_require__(1017);
-const getTargetFileList = (dir, ext) => {
+const getTargetFileList = (dir, ext) => new Promise((done) => {
+    const fileList = [];
+    walk(dir, ext, (file) => fileList.push(file));
+    done(fileList);
+});
+exports.getTargetFileList = getTargetFileList;
+// eslint-disable-next-line no-unused-vars
+const walk = (dir, ext, fb) => {
     const filenameList = (0, fs_1.readdirSync)(dir);
     const regexp = new RegExp("\\.*\\.(" + ext + ")$");
-    const fileList = [];
     for (const filename of filenameList) {
-        if (!regexp.test(filename))
-            continue;
         const filepath = (0, path_1.join)(dir, filename);
         const stats = (0, fs_1.statSync)(filepath);
-        if (!stats.isFile())
+        if (stats.isDirectory())
+            walk(filepath, ext, fb);
+        if (!regexp.test(filename))
             continue;
-        fileList.push({
-            filename,
-            size: stats.size,
-        });
+        fb({ filename, size: stats.size });
     }
-    return fileList;
 };
-exports.getTargetFileList = getTargetFileList;
 
 
 /***/ }),
@@ -8891,7 +8892,7 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
             throw new Error("No github token provided.");
         const octokit = (0, github_1.getOctokit)(githubToken);
         (0, core_1.debug)(`Read bundle files from ${outDir}`);
-        const fileList = (0, getTargetFileList_1.getTargetFileList)(outDir, ext);
+        const fileList = yield (0, getTargetFileList_1.getTargetFileList)(outDir, ext);
         (0, core_1.debug)(`Found files: ${fileList}`);
         if (!fileList.length) {
             yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, github_1.context.repo), { issue_number: github_1.context.issue.number, body: "Not found bundle files." }));
