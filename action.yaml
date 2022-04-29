@@ -1,0 +1,24 @@
+name: "Analysis bundle"
+author: "Ryuya Yanagi"
+description: "Comment on the analysis result of the bundle in the PR with your GitHub Actions workflow."
+inputs:
+  out_dir:
+    description: "Output directory for build"
+    required: true
+    default: "dist"
+  ext:
+    description: "Analysis file extension"
+    required: false
+    default: "js"
+  github_token:
+    description: "Github token that is used for commenting"
+    required: true
+outputs:
+  commented:
+    description: "Tells you if comment was added to the PR or not, boolean"
+branding:
+  icon: activity
+  color: red
+runs:
+  using: "node16"
+  main: "dist/index.js"
