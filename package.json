@@ -1,0 +1,32 @@
+{
+  "name": "bundle-analysis",
+  "version": "1.0.0",
+  "description": "Github action for bundle analysis",
+  "main": "./dist/index.js",
+  "repository": "git@github.com:apple-yagi/bundle-analysis.git",
+  "author": "apple-yagi <applesryu@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "ncc build src/index.ts --license licenses.txt -o dist",
+    "format": "prettier --write **/*.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "git config --local core.hooksPath .githooks"
+  },
+  "dependencies": {
+    "@actions/core": "^1.7.0",
+    "@actions/github": "^5.0.1",
+    "filesize": "^8.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.30",
+    "@vercel/ncc": "^0.33.4",
+    "eslint": "^8.14.0",
+    "lint-staged": "^12.4.1",
+    "prettier": "^2.6.2",
+    "typescript": "^4.6.4",
+    "vitest": "^0.10.0",
+    "xo": "^0.48.0"
+  }
+}
