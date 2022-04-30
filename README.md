@@ -1,7 +1,8 @@
 # Filesize Analysis Github Action
 
 Analyzes each PR's impact on your app's filesize and displays it using a comment.
-![demo](https://user-images.githubusercontent.com/57742720/165971202-4a37f2fc-0ce7-43ac-af9a-54c33ae02054.png)
+![demo](https://user-images.githubusercontent.com/57742720/166099132-f877783a-1ca4-4aea-be9d-f67937ddbb55.png)
+
 
 ## Example usage
 
