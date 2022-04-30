@@ -23,7 +23,7 @@ jobs:
         uses: apple-yagi/filesize-analysis@v1
         with:
           out_dir: "./dist" # Output directory for build
-          ext: "js" # If specifying multiple extension, "js|css"
+          ext: "bundle.js" # If specifying multiple extension, "bundle.js|chunk.js"
           github_token: ${{secrets.GITHUB_TOKEN}}
 ```
 
