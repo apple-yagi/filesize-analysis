@@ -1,9 +1,11 @@
-import { readdirSync, statSync } from "fs";
+import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
+import { sync } from "brotli-size";
 
 export type TargetFile = {
   filename: string;
   size: number;
+  brotliSize: number;
 };
 
 export const getTargetFileList = (
@@ -37,6 +39,7 @@ const walk = (
     fb({
       filename: filepath.replace(originDir.replace("./", ""), ""),
       size: stats.size,
+      brotliSize: sync(readFileSync(filepath)),
     });
   }
 };

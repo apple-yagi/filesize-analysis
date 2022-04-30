@@ -4254,6 +4254,103 @@ function removeHook(state, name, method) {
 
 /***/ }),
 
+/***/ 2852:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const zlib_1 = __nccwpck_require__(9796);
+const stream_1 = __nccwpck_require__(2781);
+const fs_1 = __nccwpck_require__(7147);
+const util_1 = __nccwpck_require__(3837);
+const duplexer = __nccwpck_require__(8698);
+const readFilePromise = util_1.promisify(fs_1.readFile);
+const bufferFormatter = (incoming) => typeof incoming === 'string' ? Buffer.from(incoming, 'utf8') : incoming;
+const optionFormatter = (passed, toEncode) => ({
+    params: {
+        [zlib_1.constants.BROTLI_PARAM_MODE]: passed && 'mode' in passed && passed.mode || zlib_1.constants.BROTLI_DEFAULT_MODE,
+        [zlib_1.constants.BROTLI_PARAM_QUALITY]: passed && 'quality' in passed && passed.quality || zlib_1.constants.BROTLI_MAX_QUALITY,
+        [zlib_1.constants.BROTLI_PARAM_SIZE_HINT]: toEncode ? toEncode.byteLength : 0,
+    }
+});
+/**
+ * @param incoming Either a Buffer or string of the value to encode.
+ * @param options Subset of Encoding Parameters.
+ * @return Promise that resolves with the encoded Buffer length.
+ */
+async function size(incoming, options) {
+    const buffer = bufferFormatter(incoming);
+    return new Promise(function (resolve, reject) {
+        zlib_1.brotliCompress(buffer, optionFormatter(options, buffer), (error, result) => {
+            if (error !== null) {
+                reject(error);
+            }
+            resolve(result.byteLength);
+        });
+    });
+}
+exports["default"] = size;
+/**
+ * @param incoming Either a Buffer or string of the value to encode.
+ * @param options Subset of Encoding Parameters.
+ * @return Length of encoded Buffer.
+ */
+function sync(incoming, options) {
+    const buffer = bufferFormatter(incoming);
+    return zlib_1.brotliCompressSync(buffer, optionFormatter(options, buffer)).byteLength;
+}
+exports.sync = sync;
+/**
+ * @param options
+ * @return PassThroughStream for the contents being compressed
+ */
+function stream(options) {
+    const input = new stream_1.PassThrough();
+    const output = new stream_1.PassThrough();
+    const wrapper = duplexer(input, output);
+    let size = 0;
+    const brotli = zlib_1.createBrotliCompress(optionFormatter(options))
+        .on('data', buf => {
+        size += buf.length;
+    })
+        .on('error', () => {
+        wrapper.brotliSize = 0;
+    })
+        .on('end', () => {
+        wrapper.brotliSize = size;
+        wrapper.emit('brotli-size', size);
+        output.end();
+    });
+    input.pipe(brotli);
+    input.pipe(output, { end: false });
+    return wrapper;
+}
+exports.stream = stream;
+/**
+ * @param path File Path for the file to compress.
+ * @param options Subset of Encoding Parameters.
+ * @return Promise that resolves with size of encoded file.
+ */
+async function file(path, options) {
+    const file = await readFilePromise(path);
+    return (await size(file, options));
+}
+exports.file = file;
+/**
+ * @param path File Path for the file to compress.
+ * @param options Subset of Encoding Parameters.
+ * @return size of encoded file.
+ */
+function fileSync(path, options) {
+    const file = fs_1.readFileSync(path);
+    return sync(file, options);
+}
+exports.fileSync = fileSync;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
 /***/ 8932:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -4278,6 +4375,100 @@ class Deprecation extends Error {
 }
 
 exports.Deprecation = Deprecation;
+
+
+/***/ }),
+
+/***/ 8698:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var Stream = __nccwpck_require__(2781)
+var writeMethods = ["write", "end", "destroy"]
+var readMethods = ["resume", "pause"]
+var readEvents = ["data", "close"]
+var slice = Array.prototype.slice
+
+module.exports = duplex
+
+function forEach (arr, fn) {
+    if (arr.forEach) {
+        return arr.forEach(fn)
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+        fn(arr[i], i)
+    }
+}
+
+function duplex(writer, reader) {
+    var stream = new Stream()
+    var ended = false
+
+    forEach(writeMethods, proxyWriter)
+
+    forEach(readMethods, proxyReader)
+
+    forEach(readEvents, proxyStream)
+
+    reader.on("end", handleEnd)
+
+    writer.on("drain", function() {
+      stream.emit("drain")
+    })
+
+    writer.on("error", reemit)
+    reader.on("error", reemit)
+
+    stream.writable = writer.writable
+    stream.readable = reader.readable
+
+    return stream
+
+    function proxyWriter(methodName) {
+        stream[methodName] = method
+
+        function method() {
+            return writer[methodName].apply(writer, arguments)
+        }
+    }
+
+    function proxyReader(methodName) {
+        stream[methodName] = method
+
+        function method() {
+            stream.emit(methodName)
+            var func = reader[methodName]
+            if (func) {
+                return func.apply(reader, arguments)
+            }
+            reader.emit(methodName)
+        }
+    }
+
+    function proxyStream(methodName) {
+        reader.on(methodName, reemit)
+
+        function reemit() {
+            var args = slice.call(arguments)
+            args.unshift(methodName)
+            stream.emit.apply(stream, args)
+        }
+    }
+
+    function handleEnd() {
+        if (ended) {
+            return
+        }
+        ended = true
+        var args = slice.call(arguments)
+        args.unshift("end")
+        stream.emit.apply(stream, args)
+    }
+
+    function reemit(err) {
+        stream.emit("error", err)
+    }
+}
 
 
 /***/ }),
@@ -8816,13 +9007,13 @@ exports.createReport = void 0;
 const filesize_1 = __importDefault(__nccwpck_require__(5060));
 const createReport = (fileList) => {
     let report = `
-  ## Filesize Analysis
+  ## 📦 Filesize Analysis
   
-  | Filename | Size |
-  | -------- | ---- |
+  | Filename | Size | Size(Brotli compressed) |
+  | -------- | ---- | ----------------------- |
   `;
     for (const file of fileList) {
-        report += `| ${file.filename} | ${(0, filesize_1.default)(file.size)} |\n`;
+        report += `| \`${file.filename}\` | \`${(0, filesize_1.default)(file.size)}\` | \`${(0, filesize_1.default)(file.brotliSize)}\` |\n`;
     }
     return report;
 };
@@ -8840,6 +9031,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getTargetFileList = void 0;
 const fs_1 = __nccwpck_require__(7147);
 const path_1 = __nccwpck_require__(1017);
+const brotli_size_1 = __nccwpck_require__(2852);
 const getTargetFileList = (dir, ext) => new Promise((done) => {
     const fileList = [];
     walk(dir, dir, ext, (file) => fileList.push(file));
@@ -8861,6 +9053,7 @@ fb) => {
         fb({
             filename: filepath.replace(originDir.replace("./", ""), ""),
             size: stats.size,
+            brotliSize: (0, brotli_size_1.sync)((0, fs_1.readFileSync)(filepath)),
         });
     }
 };
