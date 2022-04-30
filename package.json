@@ -10,6 +10,7 @@
     "build": "ncc build src/index.ts --license licenses.txt -o dist",
     "format": "prettier --write **/*.ts",
     "lint": "eslint . --ext .ts",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "git config --local core.hooksPath .githooks"
