@@ -8816,7 +8816,7 @@ exports.createReport = void 0;
 const filesize_1 = __importDefault(__nccwpck_require__(5060));
 const createReport = (fileList) => {
     let report = `
-  ## Bundle Analysis
+  ## Filesize Analysis
   
   | Filename | Size |
   | -------- | ---- |
@@ -8842,22 +8842,26 @@ const fs_1 = __nccwpck_require__(7147);
 const path_1 = __nccwpck_require__(1017);
 const getTargetFileList = (dir, ext) => new Promise((done) => {
     const fileList = [];
-    walk(dir, ext, (file) => fileList.push(file));
+    walk(dir, dir, ext, (file) => fileList.push(file));
     done(fileList);
 });
 exports.getTargetFileList = getTargetFileList;
+const walk = (dir, originDir, ext, 
 // eslint-disable-next-line no-unused-vars
-const walk = (dir, ext, fb) => {
+fb) => {
     const filenameList = (0, fs_1.readdirSync)(dir);
     const regexp = new RegExp("\\.*\\.(" + ext + ")$");
     for (const filename of filenameList) {
         const filepath = (0, path_1.join)(dir, filename);
         const stats = (0, fs_1.statSync)(filepath);
         if (stats.isDirectory())
-            walk(filepath, ext, fb);
+            walk(filepath, originDir, ext, fb);
         if (!regexp.test(filename))
             continue;
-        fb({ filename, size: stats.size });
+        fb({
+            filename: filepath.replace(originDir.replace("./", ""), ""),
+            size: stats.size,
+        });
     }
 };
 

@@ -27,3 +27,8 @@ it("should 2", async () => {
   const fileList = await getTargetFileList(join(__dirname, "data"), "hoge");
   expect(fileList.length).toBe(2);
 });
+
+it("should /nest/nest.fuga", async () => {
+  const fileList = await getTargetFileList(join(__dirname, "data"), "fuga");
+  expect(fileList[0].filename).toBe("/nest/nest.fuga");
+});
