@@ -1,19 +1,46 @@
 import fileSize from "filesize";
 import { TargetFile } from "./getTargetFileList";
 
-export const createReport = (fileList: TargetFile[]): string => {
+export const createReport = (
+  currentFileList: TargetFile[],
+  baseFileList: TargetFile[]
+): string => {
+  const currentTotalSize = currentFileList.reduce(
+    (size, file) => size + file.size,
+    0
+  );
+  const baseTotalSize = baseFileList.reduce(
+    (size, file) => size + file.size,
+    0
+  );
+
+  const icon = (baseTotalSize / currentTotalSize) * 100 > 10 ? "⚠️" : "✅";
+
   let report = `
   ## 📦 Filesize Analysis
+
+  Size Change: ${fileSize(currentTotalSize - baseTotalSize)} ${icon}
+
+  Total Size: ${fileSize(currentTotalSize)}
   
-  | Filename | Size | Size(Brotli compressed) |
-  | -------- | ---- | ----------------------- |
+  <details><summary>Display detail</summary>
+
+  | Filename | Size | Change | Size(Brotli compressed) | Change(Brotli compressed) |
+  | -------- | ---- | ------ | ----------------------- | ------------------------- |
   `;
 
-  for (const file of fileList) {
-    report += `| \`${file.filename}\` | \`${fileSize(
-      file.size
-    )}\` | \`${fileSize(file.brotliSize)}\` |\n`;
+  for (const currentFile of currentFileList) {
+    const baseFile = baseFileList.filter(
+      (baseFile) => baseFile.filename === currentFile.filename
+    )[0];
+    report += `| \`${currentFile.filename}\` | \`${fileSize(
+      currentFile.size
+    )}\` | \`${fileSize(currentFile.brotliSize)}\` | \`${fileSize(
+      currentFile.size - baseFile.size
+    )}\` | \`${fileSize(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
   }
+
+  report += "</details>";
 
   return report;
 };
