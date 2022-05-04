@@ -5,11 +5,10 @@ inputs:
   out_dir:
     description: "Output directory for build"
     required: true
-    default: "dist"
   ext:
     description: "Analysis file extension"
     required: false
-    default: "js"
+    default: ".*"
   build_cmd:
     description: "The command to run that builds your project"
     required: false
