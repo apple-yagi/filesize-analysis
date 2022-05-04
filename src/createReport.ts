@@ -13,13 +13,16 @@ export const createReport = (
     (size, file) => size + file.size,
     0
   );
+  const totalSizeDiff = currentTotalSize - baseTotalSize;
 
   const icon = (baseTotalSize / currentTotalSize) * 100 > 10 ? "⚠️" : "✅";
 
   let report = `
   ## 📦 Filesize Analysis
 
-  Size Change: ${fileSize(currentTotalSize - baseTotalSize)} ${icon}
+  Size Change: ${
+    totalSizeDiff === 0 ? "" : totalSizeDiff > 0 ? "+" : "-"
+  } ${fileSize(totalSizeDiff)} ${icon}
 
   Total Size: ${fileSize(currentTotalSize)}
   
@@ -33,10 +36,11 @@ export const createReport = (
     const baseFile = baseFileList.filter(
       (baseFile) => baseFile.filename === currentFile.filename
     )[0];
+
     report += `| \`${currentFile.filename}\` | \`${fileSize(
       currentFile.size
-    )}\` | \`${fileSize(currentFile.brotliSize)}\` | \`${fileSize(
-      currentFile.size - baseFile.size
+    )}\` | \`${fileSize(currentFile.size - baseFile.size)}\` | \`${fileSize(
+      currentFile.brotliSize
     )}\` | \`${fileSize(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
   }
 

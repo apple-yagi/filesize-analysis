@@ -10275,11 +10275,12 @@ const filesize_1 = __importDefault(__nccwpck_require__(5060));
 const createReport = (currentFileList, baseFileList) => {
     const currentTotalSize = currentFileList.reduce((size, file) => size + file.size, 0);
     const baseTotalSize = baseFileList.reduce((size, file) => size + file.size, 0);
+    const totalSizeDiff = currentTotalSize - baseTotalSize;
     const icon = (baseTotalSize / currentTotalSize) * 100 > 10 ? "⚠️" : "✅";
     let report = `
   ## 📦 Filesize Analysis
 
-  Size Change: ${(0, filesize_1.default)(currentTotalSize - baseTotalSize)} ${icon}
+  Size Change: ${totalSizeDiff === 0 ? "" : totalSizeDiff > 0 ? "+" : "-"} ${(0, filesize_1.default)(totalSizeDiff)} ${icon}
 
   Total Size: ${(0, filesize_1.default)(currentTotalSize)}
   
@@ -10290,7 +10291,7 @@ const createReport = (currentFileList, baseFileList) => {
   `;
     for (const currentFile of currentFileList) {
         const baseFile = baseFileList.filter((baseFile) => baseFile.filename === currentFile.filename)[0];
-        report += `| \`${currentFile.filename}\` | \`${(0, filesize_1.default)(currentFile.size)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize)}\` | \`${(0, filesize_1.default)(currentFile.size - baseFile.size)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
+        report += `| \`${currentFile.filename}\` | \`${(0, filesize_1.default)(currentFile.size)}\` | \`${(0, filesize_1.default)(currentFile.size - baseFile.size)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
     }
     report += "</details>";
     return report;
