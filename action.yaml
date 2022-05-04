@@ -13,6 +13,7 @@ inputs:
   build_cmd:
     description: "The command to run that builds your project"
     required: false
+    default: "echo 'skip build."
   github_token:
     description: "Github token that is used for commenting"
     required: true

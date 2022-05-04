@@ -10363,7 +10363,7 @@ const getTargetFileList_1 = __nccwpck_require__(9355);
 const run = (octokit) => __awaiter(void 0, void 0, void 0, function* () {
     const outDir = (0, core_1.getInput)("out_dir");
     const ext = (0, core_1.getInput)("ext");
-    const buildCmd = (0, core_1.getInput)("build_cmd") || "echo 'skip build.'";
+    const buildCmd = (0, core_1.getInput)("build_cmd");
     const prNumber = github_1.context.issue.number;
     const pr = github_1.context.payload.pull_request;
     const baseRef = pr === null || pr === void 0 ? void 0 : pr.base.ref;

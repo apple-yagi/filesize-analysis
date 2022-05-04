@@ -8,7 +8,7 @@ import { getTargetFileList } from "./getTargetFileList";
 const run = async (octokit: InstanceType<typeof GitHub>) => {
   const outDir = getInput("out_dir");
   const ext = getInput("ext");
-  const buildCmd = getInput("build_cmd") || "echo 'skip build.'";
+  const buildCmd = getInput("build_cmd");
 
   const prNumber = context.issue.number;
   const pr = context.payload.pull_request;
