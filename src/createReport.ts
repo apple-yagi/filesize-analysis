@@ -15,36 +15,55 @@ export const createReport = (
   );
   const totalSizeDiff = currentTotalSize - baseTotalSize;
 
-  const icon = (baseTotalSize / currentTotalSize) * 100 > 10 ? "⚠️" : "✅";
+  const totalDiffIcon = getDiffIcon(totalSizeDiff, currentTotalSize);
 
   let report = `
   ## 📦 Filesize Analysis
 
-  Size Change: ${
-    totalSizeDiff === 0 ? "" : totalSizeDiff > 0 ? "+" : "-"
-  } ${fileSize(totalSizeDiff)} ${icon}
-
   Total Size: ${fileSize(currentTotalSize)}
+
+  Total Size Change: ${fileSize(totalSizeDiff)} ${totalDiffIcon}
   
   <details><summary>Display detail</summary>
 
-  | Filename | Size | Change | Size(Brotli compressed) | Change(Brotli compressed) |
-  | -------- | ---- | ------ | ----------------------- | ------------------------- |
+  | Filename | Size | Change | Size(Brotli compressed) | Change(Brotli compressed) | Status |
+  | -------- | ---- | ------ | ----------------------- | ------------------------- | ------ |
   `;
 
   for (const currentFile of currentFileList) {
     const baseFile = baseFileList.filter(
       (baseFile) => baseFile.filename === currentFile.filename
     )[0];
+    const diffIcon = getDiffIcon(
+      baseFile.size - currentFile.size,
+      currentFile.size
+    );
 
     report += `| \`${currentFile.filename}\` | \`${fileSize(
       currentFile.size
     )}\` | \`${fileSize(currentFile.size - baseFile.size)}\` | \`${fileSize(
       currentFile.brotliSize
-    )}\` | \`${fileSize(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
+    )}\` | \`${fileSize(
+      currentFile.brotliSize - baseFile.brotliSize
+    )}\` | ${diffIcon} \n`;
   }
 
   report += "</details>";
 
   return report;
+};
+
+const getDiffIcon = (delta: number, filesize: number): string => {
+  if (filesize === 0) return "🆕";
+
+  const percentage = Math.round((delta / filesize) * 100);
+  if (percentage >= 50) return "🆘";
+  if (percentage >= 20) return "🚨";
+  if (percentage >= 10) return "⚠️";
+  if (percentage >= 5) return "🔍";
+  if (percentage <= -50) return "🏆";
+  if (percentage <= -20) return "🎉";
+  if (percentage <= -10) return "👏";
+  if (percentage <= -5) return "✅";
+  return "";
 };
