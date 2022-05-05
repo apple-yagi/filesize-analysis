@@ -10276,27 +10276,50 @@ const createReport = (currentFileList, baseFileList) => {
     const currentTotalSize = currentFileList.reduce((size, file) => size + file.size, 0);
     const baseTotalSize = baseFileList.reduce((size, file) => size + file.size, 0);
     const totalSizeDiff = currentTotalSize - baseTotalSize;
-    const icon = (baseTotalSize / currentTotalSize) * 100 > 10 ? "⚠️" : "✅";
+    const totalDiffIcon = getDiffIcon(totalSizeDiff, currentTotalSize);
     let report = `
   ## 📦 Filesize Analysis
 
-  Size Change: ${totalSizeDiff === 0 ? "" : totalSizeDiff > 0 ? "+" : "-"} ${(0, filesize_1.default)(totalSizeDiff)} ${icon}
-
   Total Size: ${(0, filesize_1.default)(currentTotalSize)}
+
+  Total Size Change: ${(0, filesize_1.default)(totalSizeDiff)} ${totalDiffIcon}
   
   <details><summary>Display detail</summary>
 
-  | Filename | Size | Change | Size(Brotli compressed) | Change(Brotli compressed) |
-  | -------- | ---- | ------ | ----------------------- | ------------------------- |
+  | Filename | Size | Change | Size(Brotli compressed) | Change(Brotli compressed) | Status |
+  | -------- | ---- | ------ | ----------------------- | ------------------------- | ------ |
   `;
     for (const currentFile of currentFileList) {
         const baseFile = baseFileList.filter((baseFile) => baseFile.filename === currentFile.filename)[0];
-        report += `| \`${currentFile.filename}\` | \`${(0, filesize_1.default)(currentFile.size)}\` | \`${(0, filesize_1.default)(currentFile.size - baseFile.size)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize - baseFile.brotliSize)}\` \n`;
+        const diffIcon = getDiffIcon(baseFile.size - currentFile.size, currentFile.size);
+        report += `| \`${currentFile.filename}\` | \`${(0, filesize_1.default)(currentFile.size)}\` | \`${(0, filesize_1.default)(currentFile.size - baseFile.size)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize)}\` | \`${(0, filesize_1.default)(currentFile.brotliSize - baseFile.brotliSize)}\` | ${diffIcon} \n`;
     }
     report += "</details>";
     return report;
 };
 exports.createReport = createReport;
+const getDiffIcon = (delta, filesize) => {
+    if (filesize === 0)
+        return "🆕";
+    const percentage = Math.round((delta / filesize) * 100);
+    if (percentage >= 50)
+        return "🆘";
+    if (percentage >= 20)
+        return "🚨";
+    if (percentage >= 10)
+        return "⚠️";
+    if (percentage >= 5)
+        return "🔍";
+    if (percentage <= -50)
+        return "🏆";
+    if (percentage <= -20)
+        return "🎉";
+    if (percentage <= -10)
+        return "👏";
+    if (percentage <= -5)
+        return "✅";
+    return "";
+};
 
 
 /***/ }),
