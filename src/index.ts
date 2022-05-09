@@ -50,3 +50,5 @@ const run = async (octokit: InstanceType<typeof GitHub>) => {
     if (err instanceof Error) setFailed(err.message);
   }
 })();
+
+console.log("Example PR");
